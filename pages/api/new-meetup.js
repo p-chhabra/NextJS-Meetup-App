@@ -1,4 +1,3 @@
-import { json } from "body-parser";
 import { MongoClient } from "mongodb";
 
 async function handler(req, res) {
