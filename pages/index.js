@@ -1,40 +1,34 @@
 import MeetupList from "../components/meetups/MeetupList";
-
-const DUMMY_MEETUPS = [
-  {
-    id: "m1",
-    title: "Abc",
-    image:
-      "https://cdn.pixabay.com/photo/2016/02/13/12/26/aurora-1197753__340.jpg",
-    address: "ABC Street Cornelia",
-    description: "It is a great meetup place",
-  },
-  {
-    id: "m2",
-    title: "CXA",
-    image:
-      "https://cdn.pixabay.com/photo/2016/02/13/12/26/aurora-1197753__340.jpg",
-    address: "XYZ Street Vancouver",
-    description: "It is a wonderful place",
-  },
-  {
-    id: "m3",
-    title: "KHGT",
-    image:
-      "https://cdn.pixabay.com/photo/2016/02/13/12/26/aurora-1197753__340.jpg",
-    address: "Pind Padhyan",
-    description: "The greatest place in the hp-97 area",
-  },
-];
+import { MongoClient } from "mongodb";
 
 function HomePage(props) {
   return <MeetupList meetups={props.meetups}></MeetupList>;
 }
 
+//can also use getServerSideProps
 export async function getStaticProps() {
+  const client = await MongoClient.connect(
+    "mongodb://van_astrea:abcdefgh@cluster0-shard-00-00.x7qxv.mongodb.net:27017,cluster0-shard-00-01.x7qxv.mongodb.net:27017,cluster0-shard-00-02.x7qxv.mongodb.net:27017/meetups?ssl=true&replicaSet=atlas-4xumi5-shard-0&authSource=admin&retryWrites=true&w=majority"
+  );
+
+  const db = client.db();
+
+  const meetupCollection = db.collection("meetups");
+
+  const meetups = await meetupCollection.find().toArray();
+
+  client.close();
+
   return {
     props: {
-      meetups: DUMMY_MEETUPS,
+      meetups: meetups.map((meetup) => {
+        return {
+          title: meetup.title,
+          address: meetup.address,
+          image: meetup.image,
+          id: meetup._id.toString(),
+        };
+      }),
     },
     revalidate: 10,
   };
